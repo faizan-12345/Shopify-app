@@ -1,0 +1,28 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "643ead54211841af5e19e76d4eb4a193"
+name = "faizan-rushrr-app"
+handle = "faizan-rushrr-app"
+application_url = "https://netherlands-pattern-metadata-cheaper.trycloudflare.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = false
+include_config_on_deploy = true
+
+[webhooks]
+api_version = "2025-07"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_customers,read_orders,write_orders,write_products"
+
+[auth]
+redirect_urls = [
+  "https://netherlands-pattern-metadata-cheaper.trycloudflare.com/auth/callback",
+  "https://netherlands-pattern-metadata-cheaper.trycloudflare.com/auth/shopify/callback",
+  "https://netherlands-pattern-metadata-cheaper.trycloudflare.com/api/auth/callback"
+]
+
+[pos]
+embedded = false

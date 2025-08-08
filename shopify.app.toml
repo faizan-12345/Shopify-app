@@ -1,0 +1,29 @@
+client_id = "eca9020e398997a2ae01e6c1e7592f73"
+name = "Testing_wala_logistic_app"
+handle = "testing-wala-logistic-app"  # Fixed: hyphens only
+application_url = "https://concept-rc-accidents-slowly.trycloudflare.com"
+embedded = true
+
+[build]
+include_config_on_deploy = true
+automatically_update_urls_on_dev = true
+
+[webhooks]
+api_version = "2025-04"
+
+[[webhooks.subscriptions]]
+topics = [ "app/uninstalled" ]
+uri = "/webhooks/app/uninstalled"
+
+[[webhooks.subscriptions]]
+topics = [ "app/scopes_update" ]
+uri = "/webhooks/app/scopes_update"
+
+[access_scopes]
+scopes = "write_products"
+
+[auth]
+redirect_urls = ["https://concept-rc-accidents-slowly.trycloudflare.com/auth/callback", "https://concept-rc-accidents-slowly.trycloudflare.com/auth/shopify/callback", "https://concept-rc-accidents-slowly.trycloudflare.com/api/auth/callback"]
+
+[pos]
+embedded = false

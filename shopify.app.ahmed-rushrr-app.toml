@@ -1,0 +1,24 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "bda3ed61fc6c0c461d7e08bb6cb9017e"
+name = "ahmed-rushrr-app"
+handle = "ahmed-rushrr-app"
+application_url = "https://parameters-misc-avon-donate.trycloudflare.com"
+embedded = true
+
+[build]
+include_config_on_deploy = true
+automatically_update_urls_on_dev = true
+
+[webhooks]
+api_version = "2025-07"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_customers,read_orders,read_all_orders,write_orders,write_products"
+
+[auth]
+redirect_urls = ["https://parameters-misc-avon-donate.trycloudflare.com/auth/callback", "https://parameters-misc-avon-donate.trycloudflare.com/auth/shopify/callback", "https://parameters-misc-avon-donate.trycloudflare.com/api/auth/callback"]
+
+[pos]
+embedded = false

@@ -1,0 +1,24 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "bfaaa12bc46b1a8fed890825be40ff62"
+name = "testing-logistic-app"
+handle = "testing-logistic-app"
+application_url = "https://extensive-bloggers-deal-hopes.trycloudflare.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+include_config_on_deploy = true
+
+[webhooks]
+api_version = "2025-04"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_orders,write_orders,write_products"
+
+[auth]
+redirect_urls = ["https://extensive-bloggers-deal-hopes.trycloudflare.com/auth/callback", "https://extensive-bloggers-deal-hopes.trycloudflare.com/auth/shopify/callback", "https://extensive-bloggers-deal-hopes.trycloudflare.com/api/auth/callback"]
+
+[pos]
+embedded = false
