@@ -3,7 +3,7 @@
 client_id = "bda3ed61fc6c0c461d7e08bb6cb9017e"
 name = "ahmed-rushrr-app"
 handle = "ahmed-rushrr-app"
-application_url = "https://cubic-veterans-database-girlfriend.trycloudflare.com"
+application_url = "https://shopify-app-orcin.vercel.app/"
 embedded = true
 
 [build]
@@ -18,7 +18,7 @@ api_version = "2024-10"
 scopes = "read_customers,read_orders,customer_read_orders,write_orders,write_products"
 
 [auth]
-redirect_urls = ["https://cubic-veterans-database-girlfriend.trycloudflare.com/auth/callback", "https://cubic-veterans-database-girlfriend.trycloudflare.com/auth/shopify/callback", "https://cubic-veterans-database-girlfriend.trycloudflare.com/api/auth/callback"]
+redirect_urls = ["https://shopify-app-orcin.vercel.app//auth/callback", "https://shopify-app-orcin.vercel.app//auth/shopify/callback", "https://cubic-veterans-database-girlfriend.trycloudflare.com/api/auth/callback"]
 
 [pos]
 embedded = false
