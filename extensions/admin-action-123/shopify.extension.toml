@@ -2,15 +2,15 @@
 api_version = "2025-04"
 [[extensions]]
 # Change the merchant-facing name of the extension in locales/en.default.json
-name = "Book at Faizan app"
+name = "Book at Rushrr1"
+icon = "logo.png"
 handle = "admin-action-123"
 type = "ui_extension"
 
 
-# Only 1 target can be specified for each Admin action extension
 [[extensions.targeting]]
-module = "./src/ActionExtension.jsx"
 target = "admin.order-index.selection-action.render"
+module = "./src/ActionExtension.jsx"
 
 
 # Valid extension targets:
