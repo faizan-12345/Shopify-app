@@ -585,6 +585,304 @@
 //   );
 // }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import { useEffect, useState } from 'react';
+// import {
+//   reactExtension,
+//   useApi,
+//   AdminAction,
+//   BlockStack,
+//   Button,
+//   Text,
+// } from '@shopify/ui-extensions-react/admin';
+
+// const TARGET = 'admin.order-index.selection-action.render';
+
+// export default reactExtension(TARGET, () => <BulkOrderAction />);
+
+// function BulkOrderAction() {
+//   const { close, data } = useApi(TARGET);
+//   const [orderIds, setOrderIds] = useState([]);
+//   const [isLoading, setIsLoading] = useState(false);
+//   const [responseMsg, setResponseMsg] = useState('');
+//   const [debugInfo, setDebugInfo] = useState('');
+
+//   // Extract all order IDs from selected orders
+//  useEffect(() => {
+//   console.log('🔍 Full data object from useApi:', data); // Add this line
+
+//   if (data?.selected?.length > 0) {
+//     const ids = data.selected.map((item) => item.id.split('/').pop());
+//     setOrderIds(ids);
+//   }
+// }, [data]);
+
+
+//   // Send to app/backend - BULLETPROOF VERSION
+// const handleSendToApp = async () => {
+//   setIsLoading(true);
+//   setResponseMsg('🔄 Starting...');
+//   setDebugInfo('');
+
+//   try {
+//     console.log('🚀 BULLETPROOF: Starting order processing for IDs:', orderIds);
+
+//     // Step 1: Validate we have order IDs
+//     if (!orderIds || orderIds.length === 0) {
+//       throw new Error('No orders selected. Please select orders first.');
+//     }
+
+//     setResponseMsg('🔄 Connecting to app...');
+//     setDebugInfo(`Processing ${orderIds.length} order(s): ${orderIds.join(', ')}`);
+
+//     // Step 2: Try to connect to ANY working endpoint
+//     const endpoints = [
+//       '/api/process-orders',
+//       '/resources/bulk-order-details',
+//       '/api/create-order',
+//       '/api/health' // Just to test connection
+//     ];
+
+//     let workingEndpoint = null;
+//     let connectionTest = null;
+
+//     // Test connection first
+//     for (const endpoint of endpoints) {
+//       try {
+//         console.log(`🔍 Testing connection to: ${endpoint}`);
+//         const testResponse = await fetch(endpoint, {
+//           method: endpoint === '/api/health' ? 'GET' : 'POST',
+//           headers: { 'Content-Type': 'application/json' },
+//           body: endpoint === '/api/health' ? undefined : JSON.stringify({ test: true }),
+//         });
+
+//         if (testResponse.status < 500) { // Any response except server error
+//           workingEndpoint = endpoint;
+//           connectionTest = testResponse.status;
+//           console.log(`✅ Connection successful to ${endpoint} (status: ${testResponse.status})`);
+//           break;
+//         }
+//       } catch (e) {
+//         console.log(`❌ Failed to connect to ${endpoint}:`, e.message);
+//         continue;
+//       }
+//     }
+
+//     if (!workingEndpoint) {
+//       throw new Error('❌ Cannot connect to app. Please restart your development server:\n\n1. Stop the server (Ctrl+C)\n2. Run: npm run dev\n3. Wait for new tunnel URL\n4. Try again');
+//     }
+
+//     setResponseMsg('🔄 Processing orders...');
+//     setDebugInfo(`Connected to: ${workingEndpoint} (${connectionTest})`);
+
+//     // Step 3: Process orders using working endpoint
+//     let response;
+
+//     if (workingEndpoint === '/api/health') {
+//       // If only health endpoint works, show instructions
+//       throw new Error('❌ App is running but order endpoints are not available. Please check your app configuration.');
+//     }
+
+//     try {
+//       response = await fetch(workingEndpoint, {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Accept': 'application/json',
+//         },
+//         body: JSON.stringify({ orderIds }),
+//       });
+//     } catch (fetchError) {
+//       throw new Error(`❌ Request failed: ${fetchError.message}\n\nPlease restart your development server and try again.`);
+//     }
+
+//     console.log('📨 Response status:', response.status);
+//     console.log('📨 Response headers:', Object.fromEntries(response.headers.entries()));
+
+//     if (!response.ok) {
+//       const errorText = await response.text();
+//       console.error('❌ API error:', response.status, errorText);
+//       throw new Error(`API request failed: ${response.status} ${errorText}`);
+//     }
+
+//     const result = await response.json();
+//     console.log('📋 API response received:', result);
+
+//     // Handle new API format (process-orders endpoint)
+//     if (result.results) {
+//       const { successful, failed, summary } = result.results;
+
+//       if (summary.successful > 0) {
+//         setResponseMsg(
+//           `✅ Success! ${summary.successful} order(s) processed successfully!${
+//             summary.failed > 0 ? ` ${summary.failed} failed.` : ''
+//           }`
+//         );
+//       } else {
+//         setResponseMsg('❌ All orders failed to process. Please check the logs.');
+//       }
+
+//       // Log detailed results
+//       if (successful.length > 0) {
+//         console.log('✅ Successfully processed orders:', successful.map(r => r.orderId));
+//       }
+//       if (failed.length > 0) {
+//         console.log('❌ Failed orders:', failed);
+//       }
+//       return; // Exit early for new API format
+//     }
+
+//     // Handle legacy API format (bulk-order-details endpoint)
+//     if (!result.orders || result.orders.length === 0) {
+//       throw new Error('No orders found or unable to fetch order details');
+//     }
+
+//     if (!result.token) {
+//       throw new Error('API token not found. Please configure your Rushrr API token first.');
+//     }
+
+//     // Send each order to external API (legacy flow)
+//     let successCount = 0;
+//     let errorCount = 0;
+
+//     for (const order of result.orders) {
+//       try {
+//         order.orderReferenceNumber = String(order.order_number);
+
+//         const individualPayload = {
+//           shopifyStoreUrl: `https://${result.shopifyStoreUrl}`,
+//           orders: [order],
+//         };
+
+//         console.log('📤 Sending order to external API:', order.id);
+//         const externalRes = await fetch('https://backend.rushr-admin.com/api/orders/create-order', {
+//           method: 'POST',
+//           headers: {
+//             'Content-Type': 'application/json',
+//             'Authorization': `Bearer ${result.token}`,
+//           },
+//           body: JSON.stringify(individualPayload),
+//         });
+
+//         const externalResult = await externalRes.json();
+
+//         if (externalRes.ok) {
+//           console.log('✅ Successfully sent order:', order.id, 'Response:', externalResult);
+//           successCount++;
+//         } else {
+//           console.error('❌ Failed to send order:', order.id, 'Error:', externalResult);
+//           errorCount++;
+//         }
+//       } catch (orderError) {
+//         console.error('❌ Error processing individual order:', order.id, orderError);
+//         errorCount++;
+//       }
+//     }
+
+//     if (successCount > 0) {
+//       setResponseMsg(`✅ Success! ${successCount} order(s) sent successfully!${errorCount > 0 ? ` ${errorCount} failed.` : ''}`);
+//     } else {
+//       setResponseMsg('❌ All orders failed to send. Please check your configuration.');
+//     }
+
+//   } catch (err) {
+//     console.error('❌ Error in sending orders:', err);
+
+//     // Provide specific error messages based on the error type
+//     let errorMessage = '';
+//     if (err.message.includes('Failed to fetch') || err.message.includes('ERR_NAME_NOT_RESOLVED')) {
+//       errorMessage = '❌ Connection failed. Please restart your development server (npm run dev) and try again.';
+//     } else if (err.message.includes('All endpoints failed')) {
+//       errorMessage = '❌ App not responding. Please check if your development server is running.';
+//     } else {
+//       errorMessage = `❌ Error: ${err.message}`;
+//     }
+
+//     setResponseMsg(errorMessage);
+//   } finally {
+//     setIsLoading(false);
+//   }
+// };
+
+
+
+
+//   return (
+//     <AdminAction
+//       primaryAction={
+//         <Button disabled={!orderIds.length} loading={isLoading} onPress={handleSendToApp}>
+//           {isLoading ? 'Processing...' : 'Send to App'}
+//         </Button>
+//       }
+//       secondaryAction={<Button onPress={close}>Cancel</Button>}
+//     >
+//       <BlockStack spacing="tight">
+//         <Text fontWeight="bold">Rushrr Order Processing</Text>
+//         {orderIds.length === 0 ? (
+//           <Text>No orders selected. Please select orders first.</Text>
+//         ) : (
+//           <Text>Selected Orders: {orderIds.join(', ')}</Text>
+//         )}
+//         {responseMsg && (
+//           <Text fontWeight={responseMsg.includes('✅') ? 'bold' : 'normal'}>
+//             {responseMsg}
+//           </Text>
+//         )}
+//         {debugInfo && (
+//           <Text appearance="subdued" size="small">
+//             Debug: {debugInfo}
+//           </Text>
+//         )}
+//         {!isLoading && orderIds.length > 0 && !responseMsg && (
+//           <Text appearance="subdued">
+//             Click "Send to App" to process these orders with Rushrr logistics.
+//           </Text>
+//         )}
+//       </BlockStack>
+//     </AdminAction>
+//   );
+// }
+
+
 import { useEffect, useState } from 'react';
 import {
   reactExtension,
@@ -607,204 +905,69 @@ function BulkOrderAction() {
   const [debugInfo, setDebugInfo] = useState('');
 
   // Extract all order IDs from selected orders
- useEffect(() => {
-  console.log('🔍 Full data object from useApi:', data); // Add this line
-
-  if (data?.selected?.length > 0) {
-    const ids = data.selected.map((item) => item.id.split('/').pop());
-    setOrderIds(ids);
-  }
-}, [data]);
-
-
-  // Send to app/backend - BULLETPROOF VERSION
-const handleSendToApp = async () => {
-  setIsLoading(true);
-  setResponseMsg('🔄 Starting...');
-  setDebugInfo('');
-
-  try {
-    console.log('🚀 BULLETPROOF: Starting order processing for IDs:', orderIds);
-
-    // Step 1: Validate we have order IDs
-    if (!orderIds || orderIds.length === 0) {
-      throw new Error('No orders selected. Please select orders first.');
+  useEffect(() => {
+    console.log('🔍 Full data object from useApi:', data);
+    if (data?.selected?.length > 0) {
+      const ids = data.selected.map((item) => item.id.split('/').pop());
+      setOrderIds(ids);
     }
+  }, [data]);
 
-    setResponseMsg('🔄 Connecting to app...');
-    setDebugInfo(`Processing ${orderIds.length} order(s): ${orderIds.join(', ')}`);
-
-    // Step 2: Try to connect to ANY working endpoint
-    const endpoints = [
-      '/api/process-orders',
-      '/resources/bulk-order-details',
-      '/api/create-order',
-      '/api/health' // Just to test connection
-    ];
-
-    let workingEndpoint = null;
-    let connectionTest = null;
-
-    // Test connection first
-    for (const endpoint of endpoints) {
-      try {
-        console.log(`🔍 Testing connection to: ${endpoint}`);
-        const testResponse = await fetch(endpoint, {
-          method: endpoint === '/api/health' ? 'GET' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: endpoint === '/api/health' ? undefined : JSON.stringify({ test: true }),
-        });
-
-        if (testResponse.status < 500) { // Any response except server error
-          workingEndpoint = endpoint;
-          connectionTest = testResponse.status;
-          console.log(`✅ Connection successful to ${endpoint} (status: ${testResponse.status})`);
-          break;
-        }
-      } catch (e) {
-        console.log(`❌ Failed to connect to ${endpoint}:`, e.message);
-        continue;
-      }
-    }
-
-    if (!workingEndpoint) {
-      throw new Error('❌ Cannot connect to app. Please restart your development server:\n\n1. Stop the server (Ctrl+C)\n2. Run: npm run dev\n3. Wait for new tunnel URL\n4. Try again');
-    }
-
-    setResponseMsg('🔄 Processing orders...');
-    setDebugInfo(`Connected to: ${workingEndpoint} (${connectionTest})`);
-
-    // Step 3: Process orders using working endpoint
-    let response;
-
-    if (workingEndpoint === '/api/health') {
-      // If only health endpoint works, show instructions
-      throw new Error('❌ App is running but order endpoints are not available. Please check your app configuration.');
-    }
+  const handleSendToApp = async () => {
+    setIsLoading(true);
+    setResponseMsg('🔄 Starting...');
+    setDebugInfo('');
 
     try {
-      response = await fetch(workingEndpoint, {
+      if (!orderIds.length) {
+        throw new Error('No orders selected. Please select orders first.');
+      }
+
+      setResponseMsg('🔄 Connecting to app...');
+      setDebugInfo(`Processing ${orderIds.length} order(s): ${orderIds.join(', ')}`);
+
+      // Directly hit our process-orders endpoint
+      const response = await fetch('/api/process-orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
         body: JSON.stringify({ orderIds }),
       });
-    } catch (fetchError) {
-      throw new Error(`❌ Request failed: ${fetchError.message}\n\nPlease restart your development server and try again.`);
-    }
 
-    console.log('📨 Response status:', response.status);
-    console.log('📨 Response headers:', Object.fromEntries(response.headers.entries()));
+      console.log('📨 Response status:', response.status);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ API error:', response.status, errorText);
-      throw new Error(`API request failed: ${response.status} ${errorText}`);
-    }
-
-    const result = await response.json();
-    console.log('📋 API response received:', result);
-
-    // Handle new API format (process-orders endpoint)
-    if (result.results) {
-      const { successful, failed, summary } = result.results;
-
-      if (summary.successful > 0) {
-        setResponseMsg(
-          `✅ Success! ${summary.successful} order(s) processed successfully!${
-            summary.failed > 0 ? ` ${summary.failed} failed.` : ''
-          }`
-        );
-      } else {
-        setResponseMsg('❌ All orders failed to process. Please check the logs.');
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API request failed: ${response.status} ${errorText}`);
       }
 
-      // Log detailed results
-      if (successful.length > 0) {
-        console.log('✅ Successfully processed orders:', successful.map(r => r.orderId));
-      }
-      if (failed.length > 0) {
-        console.log('❌ Failed orders:', failed);
-      }
-      return; // Exit early for new API format
-    }
+      const result = await response.json();
+      console.log('📋 API response received:', result);
 
-    // Handle legacy API format (bulk-order-details endpoint)
-    if (!result.orders || result.orders.length === 0) {
-      throw new Error('No orders found or unable to fetch order details');
-    }
-
-    if (!result.token) {
-      throw new Error('API token not found. Please configure your Rushrr API token first.');
-    }
-
-    // Send each order to external API (legacy flow)
-    let successCount = 0;
-    let errorCount = 0;
-
-    for (const order of result.orders) {
-      try {
-        order.orderReferenceNumber = String(order.order_number);
-
-        const individualPayload = {
-          shopifyStoreUrl: `https://${result.shopifyStoreUrl}`,
-          orders: [order],
-        };
-
-        console.log('📤 Sending order to external API:', order.id);
-        const externalRes = await fetch('https://backend.rushr-admin.com/api/orders/create-order', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${result.token}`,
-          },
-          body: JSON.stringify(individualPayload),
-        });
-
-        const externalResult = await externalRes.json();
-
-        if (externalRes.ok) {
-          console.log('✅ Successfully sent order:', order.id, 'Response:', externalResult);
-          successCount++;
+      // Match new backend format
+      if (result.results) {
+        const { successful, failed } = result.results;
+        if (successful.length > 0) {
+          setResponseMsg(
+            `✅ Success! ${successful.length} order(s) processed successfully!` +
+              (failed.length > 0 ? ` ${failed.length} failed.` : '')
+          );
         } else {
-          console.error('❌ Failed to send order:', order.id, 'Error:', externalResult);
-          errorCount++;
+          setResponseMsg('❌ All orders failed to process.');
         }
-      } catch (orderError) {
-        console.error('❌ Error processing individual order:', order.id, orderError);
-        errorCount++;
+        return;
       }
+
+      throw new Error('Unexpected API response format.');
+    } catch (err) {
+      console.error('❌ Error in sending orders:', err);
+      setResponseMsg(`❌ Error: ${err.message}`);
+    } finally {
+      setIsLoading(false);
     }
-
-    if (successCount > 0) {
-      setResponseMsg(`✅ Success! ${successCount} order(s) sent successfully!${errorCount > 0 ? ` ${errorCount} failed.` : ''}`);
-    } else {
-      setResponseMsg('❌ All orders failed to send. Please check your configuration.');
-    }
-
-  } catch (err) {
-    console.error('❌ Error in sending orders:', err);
-
-    // Provide specific error messages based on the error type
-    let errorMessage = '';
-    if (err.message.includes('Failed to fetch') || err.message.includes('ERR_NAME_NOT_RESOLVED')) {
-      errorMessage = '❌ Connection failed. Please restart your development server (npm run dev) and try again.';
-    } else if (err.message.includes('All endpoints failed')) {
-      errorMessage = '❌ App not responding. Please check if your development server is running.';
-    } else {
-      errorMessage = `❌ Error: ${err.message}`;
-    }
-
-    setResponseMsg(errorMessage);
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-
-
+  };
 
   return (
     <AdminAction

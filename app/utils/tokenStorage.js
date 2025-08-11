@@ -168,32 +168,280 @@
 
 
 // import { prisma } from "~/db.server";
+// import prisma from "../db.server";
+
+// export const saveToken = async (shop, token) => {
+//   try {
+//     await prisma.shop.upsert({
+//       where: { shop },
+//       update: { rushrrToken: token },
+//       create: { shop, rushrrToken: token },
+//     });
+//     console.log(`✅✅✅✅✅ Token saved for ${shop}`);
+//     return true;
+//   } catch (error) {
+//     console.error('❌ Error saving token:', error);
+//     return false;
+//   }
+// };
+
+// export const getToken = async (shop) => {
+//   try {
+//     const shopData = await prisma.shop.findUnique({
+//       where: { shop },
+//       select: { rushrrToken: true },
+//     });
+//     return shopData?.rushrrToken || null;
+//   } catch (error) {
+//     console.error('❌ Error retrieving token:', error);
+//     return null;
+//   }
+// };
+
+
+// import prisma from "../db.server";
+
+// // ✅ Save a token (upsert)
+// export async function saveToken(shop, token) {
+//   try {
+//     const saved = await prisma.token.upsert({
+//       where: { shop },
+//       update: { token },
+//       create: { shop, token },
+//     });
+//     console.log(`✅ Token saved for ${shop}`);
+//     return saved;
+//   } catch (error) {
+//     console.error('❌ Error saving token:', error);
+//     return null;
+//   }
+// }
+
+// // ✅ Get a single token
+// export async function getToken(shop) {
+//   try {
+//     const result = await prisma.token.findUnique({
+//       where: { shop },
+//     });
+
+//     const exists = result?.token ? 'Found' : 'Not found';
+//     console.log(`🔍 Token retrieved for ${shop}: ${exists}`);
+//     return result?.token || null;
+//   } catch (error) {
+//     console.error('❌ Error retrieving token:', error);
+//     return null;
+//   }
+// }
+
+// // ✅ Get all tokens from all shops
+// export async function getAllTokens() {
+//   try {
+//     const tokens = await prisma.token.findMany({
+//       select: {
+//         shop: true,
+//         token: true,
+//       },
+//     });
+//     console.log(`📋 All stored tokens: ${tokens.length}`);
+//     return tokens;
+//   } catch (error) {
+//     console.error('❌ Error getting all tokens:', error);
+//     return [];
+//   }
+// }
+
+// // ✅ Delete a token for a specific shop
+// export async function deleteToken(shop) {
+//   try {
+//     const deleted = await prisma.token.delete({
+//       where: { shop },
+//     });
+//     console.log(`🗑️ Token deleted for ${shop}`);
+//     return true;
+//   } catch (error) {
+//     // Possibly trying to delete non-existent shop
+//     if (error.code === 'P2025') {
+//       console.warn(`⚠️ Tried to delete non-existent token for ${shop}`);
+//       return false;
+//     }
+
+//     console.error('❌ Error deleting token:', error);
+//     return false;
+//   }
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import prisma from "../db.server";
+
+// // ✅ Save a token (upsert) in accessToken field
+// export async function saveToken(shop, token) {
+//   try {
+//     const saved = await prisma.Session.upsert({
+//       where: { shop },
+//       update: { accessToken: token },
+//       create: { shop, accessToken: token },
+//     });
+//     console.log(`✅ Token saved for ${shop}`);
+//     return saved;
+//   } catch (error) {
+//     console.error('❌ Error saving token:', error);
+//     return null;
+//   }
+// }
+
+// // ✅ Get a single token from accessToken field
+// export async function getToken(shop) {
+//   try {
+//     const result = await prisma.Session.findUnique({
+//       where: { shop },
+//       select: { accessToken: true },
+//     });
+
+//     const exists = result?.accessToken ? 'Found' : 'Not found';
+//     console.log(`🔍 Token retrieved for ${shop}: ${exists}`);
+//     return result?.accessToken || null;
+//   } catch (error) {
+//     console.error('❌ Error retrieving token:', error);
+//     return null;
+//   }
+// }
+
+// // ✅ Get all tokens from all shops
+// export async function getAllTokens() {
+//   try {
+//     const tokens = await prisma.Session.findMany({
+//       select: {
+//         shop: true,
+//         accessToken: true,
+//       },
+//     });
+//     console.log(`📋 All stored tokens: ${tokens.length}`);
+//     return tokens;
+//   } catch (error) {
+//     console.error('❌ Error getting all tokens:', error);
+//     return [];
+//   }
+// }
+
+// // ✅ Delete a token for a specific shop
+// export async function deleteToken(shop) {
+//   try {
+//     const deleted = await prisma.token.delete({
+//       where: { shop },
+//     });
+//     console.log(`🗑️ Token deleted for ${shop}`);
+//     return true;
+//   } catch (error) {
+//     // Possibly trying to delete non-existent shop
+//     if (error.code === 'P2025') {
+//       console.warn(`⚠️ Tried to delete non-existent token for ${shop}`);
+//       return false;
+//     }
+
+//     console.error('❌ Error deleting token:', error);
+//     return false;
+//   }
+// }
+
+
+
 import prisma from "../db.server";
 
-export const saveToken = async (shop, token) => {
+// ✅ Save a token (upsert) in accessToken field
+export async function saveToken(shop, token) {
   try {
-    await prisma.shop.upsert({
+    const saved = await prisma.session.upsert({
       where: { shop },
-      update: { rushrrToken: token },
-      create: { shop, rushrrToken: token },
+      update: { accessToken: token },
+      create: { 
+        id: generateId(), // You need to generate an ID
+        shop, 
+        accessToken: token,
+        isOnline: false, // Required field with default
+        state: '', // Required field
+      },
     });
-    console.log(`✅✅✅✅✅ Token saved for ${shop}`);
-    return true;
+    console.log(`✅ Token saved for ${shop}`);
+    return saved;
   } catch (error) {
     console.error('❌ Error saving token:', error);
-    return false;
+    return null;
   }
-};
+}
 
-export const getToken = async (shop) => {
+// Helper function to generate ID (you might want to use cuid or uuid)
+function generateId() {
+  return Math.random().toString(36).substring(2, 15) + 
+         Math.random().toString(36).substring(2, 15);
+}
+
+// ✅ Get a single token from accessToken field
+export async function getToken(shop) {
   try {
-    const shopData = await prisma.shop.findUnique({
+    const result = await prisma.session.findUnique({
       where: { shop },
-      select: { rushrrToken: true },
+      select: { accessToken: true },
     });
-    return shopData?.rushrrToken || null;
+
+    const exists = result?.accessToken ? 'Found' : 'Not found';
+    console.log(`🔍 Token retrieved for ${shop}: ${exists}`);
+    return result?.accessToken || null;
   } catch (error) {
     console.error('❌ Error retrieving token:', error);
     return null;
   }
-};
+}
+
+// ✅ Get all tokens from all shops
+export async function getAllTokens() {
+  try {
+    const tokens = await prisma.session.findMany({
+      select: {
+        shop: true,
+        accessToken: true,
+      },
+    });
+    console.log(`📋 All stored tokens: ${tokens.length}`);
+    return tokens;
+  } catch (error) {
+    console.error('❌ Error getting all tokens:', error);
+    return [];
+  }
+}
+
+// ✅ Delete a token for a specific shop
+export async function deleteToken(shop) {
+  try {
+    const deleted = await prisma.session.delete({
+      where: { shop },
+    });
+    console.log(`🗑️ Token deleted for ${shop}`);
+    return true;
+  } catch (error) {
+    // Possibly trying to delete non-existent shop
+    if (error.code === 'P2025') {
+      console.warn(`⚠️ Tried to delete non-existent token for ${shop}`);
+      return false;
+    }
+
+    console.error('❌ Error deleting token:', error);
+    return false;
+  }
+}
